@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../plugin.video.themoviedb.helper-6.7.7"
+		},
+		{
+			"path": "../../plugin.video.otaku"
+		}
+	],
+	"settings": {}
+}

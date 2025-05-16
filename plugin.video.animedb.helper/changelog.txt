@@ -1,0 +1,13 @@
+AnimeDB Helper Kodi Add-on Changelog
+====================================
+
+v1.0.0 (Omega)
+---------------
+- Kodi 21 (Omega) compatibility
+- OAuth2 login for AniList, MyAnimeList, Trakt
+- Real-time AniList API integration (trending, seasonal, genres, search)
+- Local playback history and continue watching/next episode
+- Context menu for external player add-on
+- Default player setting
+- Token refresh support for AniList
+- Packaging and assets for Kodi zip install

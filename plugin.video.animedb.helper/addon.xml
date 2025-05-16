@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.animedb.helper" name="AnimeDB Helper" version="1.0.0" provider-name="AnimeDB">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.requests" version="2.22.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.service" library="service.py" />
+    <extension point="xbmc.addon.metadata">
+        <settings>
+            <category label="30000">
+                <setting id="items_per_page" type="number" label="30004" default="20" />
+                <setting id="auto_mark_watched" type="bool" label="30005" default="false" />
+                <setting id="always_select_player" type="bool" label="30006" default="false" />
+                <setting id="debug_mode" type="bool" label="Debug Mode" default="false" />
+                <setting id="default_player" type="string" label="Default Player" default="" />
+            </category>
+        </settings>
+        <summary lang="en_GB">Anime tracking and playback helper</summary>
+        <description lang="en_GB">
+AnimeDB Helper provides integration with anime tracking services like AniList, MyAnimeList, and Trakt.
+Features include:
+- Watch history tracking
+- Watchlist management
+- Recommendations
+        </description>
+        <platform>all</platform>
+        <license>GPL-3.0</license>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+    </extension>
+</addon>

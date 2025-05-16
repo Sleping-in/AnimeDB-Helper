@@ -1,0 +1,586 @@
+# Kodi Media Center language file
+# Addon Name: AnimeDB Helper
+# Addon id: plugin.video.animedb.helper
+# Addon Provider: Your Name
+msgid ""
+msgstr ""
+"Project-Id-Version: XBMC Addons\n"
+"Report-Msgid-Bugs-To: alanwww1@xbmc.org\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Kodi Translation Team\n"
+"Language-Team: English (https://www.transifex.com/projects/p/xbmc-addons/language/en/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# General Settings
+msgctxt "#30000"
+msgid "General"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Error"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Failed to get show details from source."
+msgstr ""
+
+msgctxt "#30003"
+msgid "Info"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Items Per Page"
+msgstr "Number of items to display per page"
+
+msgctxt "#30005"
+msgid "Auto-mark as Watched"
+msgstr "Automatically mark episodes as watched after playback"
+
+msgctxt "#30006"
+msgid "Always Show Player Selection"
+msgstr "Always display player selection dialog before playback"
+
+msgctxt "#30007"
+msgid "Debug Mode"
+msgstr "Enable detailed logging for troubleshooting"
+
+msgctxt "#30008"
+msgid "Season {number}"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Episode {number}"
+msgstr ""
+
+msgctxt "#30010"
+msgid "TMDB Show Title (Mock)"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Anime Title {id} (Mock)"
+msgstr ""
+
+msgctxt "#30012"
+msgid "TV Show"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Specials"
+msgstr ""
+
+# Player Settings (New IDs based on TMDB Helper structure)
+msgctxt "#32100"
+msgid "Player Settings"
+msgstr ""
+
+msgctxt "#32101"
+msgid "Configure how external and internal players are used for playback."
+msgstr ""
+
+msgctxt "#32110"
+msgid "Player Defaults"
+msgstr ""
+
+msgctxt "#32111"
+msgid "Default Player for Movies"
+msgstr ""
+
+msgctxt "#32112"
+msgid "Set the default player for movies."
+msgstr ""
+
+msgctxt "#32113"
+msgid "Default Player for Episodes"
+msgstr ""
+
+msgctxt "#32114"
+msgid "Set the default player for TV episodes."
+msgstr ""
+
+msgctxt "#32115"
+msgid "Use Provider's Default Player"
+msgstr ""
+
+msgctxt "#32116"
+msgid "Use the provider's recommended player as default."
+msgstr ""
+
+msgctxt "#32117"
+msgid "Kodi Player Option"
+msgstr ""
+
+msgctxt "#32118"
+msgid "Choose how Kodi's internal player is used."
+msgstr ""
+
+msgctxt "#32119"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#32120"
+msgid "Enabled"
+msgstr ""
+
+msgctxt "#32121"
+msgid "Ask"
+msgstr ""
+
+msgctxt "#32130"
+msgid "Player Management"
+msgstr ""
+
+msgctxt "#32131"
+msgid "Combine Player List"
+msgstr ""
+
+msgctxt "#32132"
+msgid "Show a combined list of all available players for selection."
+msgstr ""
+
+msgctxt "#32133"
+msgid "Enable Bundled Players"
+msgstr ""
+
+msgctxt "#32134"
+msgid "Enable or disable bundled external players."
+msgstr ""
+
+msgctxt "#32135"
+msgid "Players URL"
+msgstr ""
+
+msgctxt "#32136"
+msgid "URL to fetch or update player definitions."
+msgstr ""
+
+msgctxt "#32137"
+msgid "Configure Players"
+msgstr ""
+
+msgctxt "#32138"
+msgid "Open the player configuration dialog."
+msgstr ""
+
+msgctxt "#32150"
+msgid "Enable TMDB Integration"
+msgstr ""
+
+msgctxt "#32151"
+msgid "TMDB API Key"
+msgstr ""
+
+msgctxt "#32152"
+msgid "Enter your TMDB API Key. You can obtain one for free at https://www.themoviedb.org/settings/api"
+msgstr ""
+
+msgctxt "#32153"
+msgid "Authenticate with TMDB"
+msgstr ""
+
+msgctxt "#32154"
+msgid "Test TMDB Connection"
+msgstr ""
+
+# AniList Settings
+msgctxt "#30100"
+msgid "AniList"
+msgstr ""
+
+msgctxt "#30101"
+msgid "AniList Settings"
+msgstr ""
+
+msgctxt "#30102"
+msgid "Enable AniList"
+msgstr ""
+
+msgctxt "#30103"
+msgid "Client ID"
+msgstr ""
+
+msgctxt "#30104"
+msgid "Client Secret"
+msgstr ""
+
+msgctxt "#30105"
+msgid "Access Token"
+msgstr ""
+
+msgctxt "#30106"
+msgid "Refresh Token"
+msgstr ""
+
+msgctxt "#30107"
+msgid "Authenticate with AniList"
+msgstr ""
+
+msgctxt "#30108"
+msgid "AniList Status"
+msgstr ""
+
+msgctxt "#30109"
+msgid "Revoke AniList Authorization"
+msgstr ""
+
+msgctxt "#30150"
+msgid "Test AniList Connection"
+msgstr ""
+
+# MyAnimeList Settings
+msgctxt "#30200"
+msgid "MyAnimeList"
+msgstr ""
+
+msgctxt "#30201"
+msgid "MyAnimeList Settings"
+msgstr ""
+
+msgctxt "#30202"
+msgid "Enable MyAnimeList"
+msgstr ""
+
+msgctxt "#30203"
+msgid "Client ID"
+msgstr ""
+
+msgctxt "#30204"
+msgid "Client Secret"
+msgstr ""
+
+msgctxt "#30205"
+msgid "Access Token"
+msgstr ""
+
+msgctxt "#30206"
+msgid "Refresh Token"
+msgstr ""
+
+msgctxt "#30207"
+msgid "Authenticate with MyAnimeList"
+msgstr ""
+
+msgctxt "#30208"
+msgid "MyAnimeList Status"
+msgstr ""
+
+msgctxt "#30209"
+msgid "Revoke MyAnimeList Authorization"
+msgstr ""
+
+msgctxt "#30250"
+msgid "Test MyAnimeList Connection"
+msgstr ""
+
+# Trakt Settings
+msgctxt "#30300"
+msgid "Trakt"
+msgstr ""
+
+msgctxt "#30301"
+msgid "Trakt Settings"
+msgstr ""
+
+msgctxt "#30302"
+msgid "Enable Trakt"
+msgstr ""
+
+msgctxt "#30303"
+msgid "Client ID"
+msgstr ""
+
+msgctxt "#30304"
+msgid "Client Secret"
+msgstr ""
+
+msgctxt "#30305"
+msgid "Access Token"
+msgstr ""
+
+msgctxt "#30306"
+msgid "Refresh Token"
+msgstr ""
+
+msgctxt "#30307"
+msgid "Authenticate with Trakt"
+msgstr ""
+
+msgctxt "#30308"
+msgid "Trakt Status"
+msgstr ""
+
+msgctxt "#30309"
+msgid "Revoke Trakt Authorization"
+msgstr ""
+
+msgctxt "#30350"
+msgid "Test Trakt Connection"
+msgstr ""
+
+# Display Settings
+msgctxt "#30400"
+msgid "TMDB"
+msgstr "" # Category label for TMDB settings
+
+msgctxt "#30401"
+msgid "Display"
+msgstr ""
+
+msgctxt "#30402"
+msgid "Default View Mode"
+msgstr ""
+
+msgctxt "#30403"
+msgid "Default"
+msgstr ""
+
+msgctxt "#30404"
+msgid "List"
+msgstr ""
+
+msgctxt "#30405"
+msgid "Poster"
+msgstr ""
+
+msgctxt "#30406"
+msgid "Wall"
+msgstr ""
+
+msgctxt "#30407"
+msgid "Fanart"
+msgstr ""
+
+msgctxt "#30408"
+msgid "Show Plot"
+msgstr ""
+
+msgctxt "#30409"
+msgid "Show Score"
+msgstr ""
+
+msgctxt "#30451"
+msgid "Enable Widgets"
+msgstr ""
+
+msgctxt "#30453"
+msgid "Arctic Fuse Integration"
+msgstr ""
+
+msgctxt "#30454"
+msgid "Widget Update Interval (minutes)"
+msgstr ""
+
+# Playback Settings
+msgctxt "#30500"
+msgid "Failed to get base show details."
+msgstr ""
+
+msgctxt "#30501"
+msgid "Playback"
+msgstr ""
+
+msgctxt "#30502"
+msgid "Auto-play Next Episode"
+msgstr ""
+
+msgctxt "#30503"
+msgid "Ask for Episode Number"
+msgstr ""
+
+msgctxt "#30504"
+msgid "Progress Threshold for Watched (%)"
+msgstr ""
+
+# Cache Settings
+msgctxt "#30600"
+msgid "No episode data found for Season {season_number}."
+msgstr ""
+
+msgctxt "#30601"
+msgid "Cache"
+msgstr ""
+
+msgctxt "#30602"
+msgid "Enable Cache"
+msgstr ""
+
+msgctxt "#30603"
+msgid "Cache TTL (Hours)"
+msgstr ""
+
+msgctxt "#30604"
+msgid "Clear Cache"
+msgstr ""
+
+# History Settings
+msgctxt "#30700"
+msgid "No season information found on TMDB."
+msgstr ""
+
+msgctxt "#30701"
+msgid "History"
+msgstr ""
+
+msgctxt "#30702"
+msgid "Enable History"
+msgstr ""
+
+msgctxt "#30703"
+msgid "History Limit"
+msgstr ""
+
+msgctxt "#30704"
+msgid "Clear History"
+msgstr ""
+
+# Advanced Settings
+msgctxt "#30800"
+msgid "Advanced"
+msgstr ""
+
+msgctxt "#30801"
+msgid "Advanced Settings"
+msgstr ""
+
+msgctxt "#30802"
+msgid "Debug Logging"
+msgstr ""
+
+# Sync Settings
+msgctxt "#30900"
+msgid "Synchronization"
+msgstr ""
+
+msgctxt "#30901"
+msgid "Sync Settings"
+msgstr ""
+
+msgctxt "#30902"
+msgid "Enable Synchronization"
+msgstr ""
+
+msgctxt "#30903"
+msgid "Sync Interval (hours)"
+msgstr ""
+
+msgctxt "#30905"
+msgid "Sync Cancelled by User"
+msgstr ""
+
+msgctxt "#30906"
+msgid "Sync Continuing..."
+msgstr ""
+
+msgctxt "#30910"
+msgid "Sync Options"
+msgstr ""
+
+msgctxt "#30911"
+msgid "Sync Watchlist"
+msgstr ""
+
+msgctxt "#30912"
+msgid "Sync Watch History"
+msgstr ""
+
+msgctxt "#30913"
+msgid "Sync Ratings"
+msgstr ""
+
+msgctxt "#30920"
+msgid "Advanced Sync Options"
+msgstr ""
+
+msgctxt "#30921"
+msgid "Sync on Startup"
+msgstr ""
+
+msgctxt "#30922"
+msgid "Sync on Idle"
+msgstr ""
+
+msgctxt "#30930"
+msgid "Manual Sync Actions"
+msgstr ""
+
+msgctxt "#30931"
+msgid "Sync Now"
+msgstr ""
+
+msgctxt "#30940"
+msgid "Sync Retry Settings"
+msgstr ""
+
+msgctxt "#30941"
+msgid "Max Retry Attempts"
+msgstr ""
+
+msgctxt "#30942"
+msgid "Retry Delay (seconds)"
+msgstr ""
+
+# Status & Notifications
+msgctxt "#31000"
+msgid "Sync in progress..."
+msgstr ""
+
+msgctxt "#31001"
+msgid "Error"
+msgstr ""
+
+msgctxt "#31002"
+msgid "Sync completed successfully"
+msgstr ""
+
+msgctxt "#31003"
+msgid "Sync failed"
+msgstr ""
+
+msgctxt "#31004"
+msgid "Cache Cleared"
+msgstr ""
+
+msgctxt "#31005"
+msgid "History Cleared"
+msgstr ""
+
+msgctxt "#31010"
+msgid "Not authenticated"
+msgstr ""
+
+msgctxt "#31011"
+msgid "Authorized"
+msgstr ""
+
+msgctxt "#31012"
+msgid "Connection test successful"
+msgstr ""
+
+msgctxt "#31013"
+msgid "Connection test failed"
+msgstr ""
+
+msgctxt "#32060"
+msgid "Select Player"
+msgstr ""
+
+msgctxt "#32003"
+msgid "No Player"
+msgstr ""
+
+msgctxt "#32004"
+msgid "No player found for this item."
+msgstr ""
+
+msgctxt "#137"
+msgid "Search"
+msgstr ""
+
+msgctxt "#32061"
+msgid "Play using"
+msgstr ""
+

@@ -1,0 +1,6 @@
+{
+  "name": "Otaku",
+  "plugin_id": "plugin.video.otaku",
+  "command": "plugin://plugin.video.otaku/?action=play&anilist_id={id}&episode={episode}",
+  "is_resolvable": true
+}

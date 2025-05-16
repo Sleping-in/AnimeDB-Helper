@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <!-- General Settings -->
+    <category label="30000">
+        <setting id="items_per_page" type="number" label="30004" default="25" range="10,5,100"/>
+        <setting id="auto_mark_watched" type="bool" label="30005" default="true"/>
+        <setting id="ask_episode_number" type="bool" label="30503" default="false"/>
+        <setting id="always_select_player" type="bool" label="30006" default="false"/>
+    </category>
+    
+    <!-- Player Settings -->
+    <category id="players" label="32100" help="32101">
+        <setting type="lsep" label="32110" /> <!-- Player Defaults -->
+        
+        <setting id="default_player_movies_action" type="action" label="32111" help="32112"
+                 action="RunPlugin(plugin://plugin.video.animedb.helper/?action=set_defaultplayer&amp;media_type=movie)"/>
+        <setting id="default_player_movies_name_display" type="text" label="32122" default="Not Set" enable="false"/>
+        <setting id="default_player_movies_id" type="text" default="" visible="false"/>
+
+        <setting id="default_player_episodes_action" type="action" label="32113" help="32114"
+                 action="RunPlugin(plugin://plugin.video.animedb.helper/?action=set_defaultplayer&amp;media_type=tv)"/>
+        <setting id="default_player_episodes_name_display" type="text" label="32123" default="Not Set" enable="false"/>
+        <setting id="default_player_episodes_id" type="text" default="" visible="false"/>
+        
+        <setting id="default_player_provider" type="bool" label="32115" help="32116">
+            <level>0</level>
+            <default>true</default>
+            <control type="toggle"/>
+        </setting>
+        <setting id="default_player_kodi" type="integer" label="32117" help="32118" default="1"/>
+        
+        <setting type="lsep" label="32130" /> <!-- Player Management -->
+        <setting id="combined_players" type="bool" label="32131" help="32132">
+            <level>0</level>
+            <default>true</default>
+            <control type="toggle"/>
+        </setting>
+        <setting id="bundled_players" type="bool" label="32133" help="32134">
+            <level>0</level>
+            <default>true</default>
+            <control type="toggle"/>
+        </setting>
+        <setting id="players_url" type="text" label="32135" help="32136" default=""/> <!-- Changed to type="text" -->
+        <setting id="action_update_players_from_url" type="action" label="32139" 
+                 action="RunPlugin(plugin://plugin.video.animedb.helper/?action=update_players_from_url)"/>
+        
+        <setting id="configure_players" type="action" label="32137" help="32138"
+                 action="RunPlugin(plugin://plugin.video.animedb.helper/?action=configure_players)">
+            <level>0</level>
+            <constraints>
+                <allowempty>true</allowempty>
+            </constraints>
+            <control type="button" format="action"/>
+        </setting>
+    </category>
+    
+    <!-- AniList Settings -->
+    <category label="30100">
+        <setting id="anilist_enabled" type="bool" label="30102" default="true" />
+        <setting id="anilist_client_id" type="text" label="30103" default=""/>
+        <setting id="anilist_client_secret" type="text" label="30104" default="" option="hidden" />
+        <setting id="anilist_auth_status" type="text" label="30108" default="$LOCALIZE[31010]" enable="false" />
+        <setting id="anilist_auth_action" type="action" label="30107" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=auth_anilist)"/>
+        <setting id="anilist_revoke" type="action" label="30109" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=auth_anilist&amp;revoke=1)" visible="eq(-2,true)"/> <!-- Corrected visible condition -->
+        <setting id="test_anilist_connection" type="action" label="30150" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=test_connection&amp;service=anilist)" visible="eq(-3,true)"/> <!-- Corrected visible condition -->
+    </category>
+    
+    <!-- MyAnimeList Settings -->
+    <category label="30200">
+        <setting id="mal_enabled" type="bool" label="30202" default="true" />
+        <setting id="mal_client_id" type="text" label="30203" default=""/>
+        <setting id="mal_client_secret" type="text" label="30204" default="" option="hidden" />
+        <setting id="mal_auth_status" type="text" label="30208" default="$LOCALIZE[31010]" enable="false" />
+        <setting id="mal_auth_action" type="action" label="30207" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=auth_mal)"/>
+        <setting id="mal_revoke" type="action" label="30209" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=auth_mal&amp;revoke=1)" visible="eq(-2,true)"/> <!-- Corrected visible condition -->
+        <setting id="test_mal_connection" type="action" label="30250" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=test_connection&amp;service=mal)" visible="eq(-3,true)"/> <!-- Corrected visible condition -->
+    </category>
+    
+    <!-- TMDB Settings -->
+    <category label="30400">
+        <setting id="tmdb_enabled" type="bool" label="32150" default="true" />
+        <setting id="tmdb_api_key" type="text" label="32151" default="" help="32152"/>
+        <setting id="tmdb_auth_action" type="action" label="32153" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=auth_tmdb)" />
+        <setting id="test_tmdb_connection" type="action" label="32154" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=test_connection&amp;service=tmdb)" />
+    </category>
+
+    <!-- Trakt Settings -->
+    <category label="30300">
+        <setting id="trakt_enabled" type="bool" label="30302" default="true" />
+        <setting id="trakt_client_id" type="text" label="30303" default=""/>
+        <setting id="trakt_client_secret" type="text" label="30304" default="" option="hidden" />
+        <setting id="trakt_auth_status" type="text" label="30308" default="$LOCALIZE[31010]" enable="false" />
+        <setting id="trakt_auth_action" type="action" label="30307" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=auth_trakt)"/>
+        <setting id="trakt_revoke" type="action" label="30309" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=auth_trakt&amp;revoke=1)" visible="eq(-2,true)"/> <!-- Corrected visible condition -->
+        <setting id="test_trakt_connection" type="action" label="30350" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=test_connection&amp;service=trakt)" visible="eq(-3,true)"/> <!-- Corrected visible condition -->
+    </category>
+    
+    <!-- Display Settings -->
+    <category label="30401">
+        <setting id="view_mode" type="select" label="30402" values="auto|list|poster|fanart|landscape|icons|wall" default="auto" />
+        <setting id="show_plot" type="bool" label="30408" default="true" />
+        <setting id="show_score" type="bool" label="30409" default="true" />
+    </category>
+    
+    <!-- Playback Settings -->
+    <category label="30501">
+        <setting id="auto_play_next" type="bool" label="30502" default="false" />
+        <setting id="progress_threshold" type="slider" label="30504" default="90" range="50,5,100" option="int" />
+    </category>
+    
+    <!-- Cache Settings -->
+    <category label="30601">
+        <setting id="cache_enabled" type="bool" label="30602" default="true" />
+        <setting id="cache_ttl" type="slider" label="30603" default="24" range="1,1,72" option="int" />
+        <setting id="clear_cache" type="action" label="30604" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=clear_cache)" />
+    </category>
+    
+    <!-- History Settings -->
+    <category label="30701">
+        <setting id="history_enabled" type="bool" label="30702" default="true" />
+        <setting id="history_limit" type="slider" label="30703" default="100" range="50,50,1000" option="int" />
+        <setting id="clear_history" type="action" label="30704" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=clear_history)" />
+    </category>
+    
+    <!-- Sync Settings -->
+    <category label="30901">
+        <setting id="sync_enabled" type="bool" label="30902" default="true" />
+        <setting id="sync_interval" type="slider" label="30903" default="24" range="1,1,72" option="int" subsetting="true" visible="eq(-1,true)" />
+        
+        <setting type="lsep" label="30910" />
+        <setting id="sync_watchlist" type="bool" label="30911" default="true" subsetting="true" visible="eq(-3,true)" />
+        <setting id="sync_history" type="bool" label="30912" default="true" subsetting="true" visible="eq(-4,true)" />
+        <setting id="sync_ratings" type="bool" label="30913" default="true" subsetting="true" visible="eq(-5,true)" />
+        
+        <setting type="lsep" label="30920" />
+        <setting id="sync_on_startup" type="bool" label="30921" default="false" subsetting="true" visible="eq(-7,true)" />
+        <setting id="sync_on_idle" type="bool" label="30922" default="false" subsetting="true" visible="eq(-8,true)" />
+        
+        <setting type="lsep" label="30930" />
+        <setting id="force_sync_action" type="action" label="30931" action="RunPlugin(plugin://plugin.video.animedb.helper/?action=sync)" visible="eq(-10,true)" />
+        
+        <setting type="lsep" label="30940" />
+        <setting id="sync_retry_attempts" type="slider" label="30941" default="3" range="0,1,5" option="int" subsetting="true" visible="eq(-12,true)" />
+        <setting id="sync_retry_delay" type="slider" label="30942" default="5" range="1,1,30" option="int" subsetting="true" visible="eq(-13,true)" />
+    </category>
+    
+    <!-- Advanced Settings -->
+    <category label="30801">
+        <setting id="debug_logging" type="bool" label="30802" default="false" />
+    </category>
+</settings>
+
