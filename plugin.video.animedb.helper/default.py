@@ -20,7 +20,19 @@ def log(message, level=xbmc.LOGINFO):
 from resources.lib.ui import (
     home, list_anime, list_watchlist, list_genres, list_history, 
     list_continue_watching, list_upcoming, list_calendar, list_calendar_date,
-    search, show_anime_details, set_skin_properties, list_genre
+    show_anime_details, set_skin_properties, list_genre,
+    list_trending, list_seasonal, add_directory_item
+)
+
+# Search functionality
+from resources.lib.search import (
+    show_search_menu, show_search_input, show_search_history,
+    show_advanced_search, perform_search, delete_search_history
+)
+
+# Library functionality
+from resources.lib.library import (
+    LIBRARY, show_library, show_continue_watching
 )
 
 # Player Management (Original and New)
@@ -109,54 +121,51 @@ def router(paramstring):
             xbmcgui.Dialog().notification(ADDON.getLocalizedString(30900), ADDON.getLocalizedString(31002), xbmcgui.NOTIFICATION_ERROR)
             xbmcplugin.endOfDirectory(current_handle)
 
-    elif action == "play_item_route": # New route for playing items with the new player system
-        # Reconstruct item_meta. In episodes_new.py, we passed individual params.
-        # Let's assume players.py will be called with a reconstructed item_meta dict.
-        # Or, pass all necessary params directly to play_media_with_player_selection if it accepts them.
-        # For now, reconstruct a basic item_meta from params.
-        item_meta = {}
-        for key, value_list in params.items():
-            if key != "action" and value_list:
-                item_meta[key] = value_list[0]
+    elif action == "play_item_route":
+        # Extract parameters
+        anime_id = params.get("anime_id", [None])[0]
+        source = params.get("source", ["anilist"])[0]
+        episode = params.get("episode", [None])[0]
+        url = params.get("url", [None])[0]
+        total_episodes = params.get("total_episodes", [None])[0]
         
-        # Ensure essential keys are present for the player system
-        # The player system (players.py) expects specific keys in item_meta.
-        # Example from episodes_new.py for item_meta_for_player:
-        # {"id", "anilist_id", "tmdb_id", "title", "tvshowtitle", "season", "episode", "plot", ...}
-        # We need to ensure these are passed correctly or reconstructed.
-        # A simpler way might be to pass item_meta as a JSON string in the URL.
-        # For example: &item_meta_json={"id":"123",...}
-        item_meta_json_str = params.get("item_meta_json", [None])[0]
-        if item_meta_json_str:
-            try:
-                item_meta = json.loads(item_meta_json_str)
-                log(f"play_item_route: item_meta from JSON: {item_meta}")
-            except json.JSONDecodeError as e:
-                log(f"play_item_route: Failed to decode item_meta_json: {e}", xbmc.LOGERROR)
-                xbmcgui.Dialog().notification(ADDON.getLocalizedString(30900), ADDON.getLocalizedString(31003), xbmcgui.NOTIFICATION_ERROR)
-                # xbmcplugin.endOfDirectory(current_handle) # Not a directory listing
-                return # Important to return, not endOfDirectory for a play action
-        else: # Fallback to individual params if item_meta_json is not used
-            log(f"play_item_route: item_meta from individual params: {item_meta}")
-            # Ensure required fields are present and correctly typed for play_media_with_player_selection
-            item_meta["id"] = params.get("anime_id", [item_meta.get("id")])[0]
-            item_meta["anilist_id"] = params.get("anime_id", [item_meta.get("anilist_id")])[0]
-            item_meta["tmdb_id"] = params.get("tmdb_id", [item_meta.get("tmdb_id")])[0]
-            item_meta["title"] = params.get("episode_title", [item_meta.get("title")])[0]
-            item_meta["tvshowtitle"] = params.get("show_title", [item_meta.get("tvshowtitle")])[0]
-            item_meta["season"] = params.get("season_number", [item_meta.get("season")])[0]
-            item_meta["episode"] = params.get("episode_number", [item_meta.get("episode")])[0]
-        
-        if item_meta.get("id") and item_meta.get("title") and item_meta.get("season") and item_meta.get("episode"):
-            play_media_with_player_selection(item_meta)
-            # Record watch history after playback is triggered
-            from resources.lib.history import record_watch
-            record_watch(item_meta.get("id"), item_meta.get("episode"), item_meta.get("source", "anilist"))
-        else:
-            log(f"play_item_route: Missing essential item_meta for playback. Got: {item_meta}", xbmc.LOGERROR)
-            xbmcgui.Dialog().notification(ADDON.getLocalizedString(30900), ADDON.getLocalizedString(31004), xbmcgui.NOTIFICATION_ERROR)
-        # Play actions typically don't call endOfDirectory. setResolvedUrl is handled by player.
-        return # Explicit return for play actions
+        if not all([anime_id, episode, url]):
+            log(f"play_item_route: Missing required parameters. anime_id: {anime_id}, episode: {episode}, url: {url}", xbmc.LOGERROR)
+            xbmcgui.Dialog().notification(
+                "Playback Error",
+                "Missing required parameters for playback",
+                xbmcgui.NOTIFICATION_ERROR
+            )
+            return
+            
+        try:
+            # Use our new player to handle playback with progress tracking
+            from resources.lib.player import play_episode
+            
+            # Convert to appropriate types
+            episode_num = int(episode)
+            total_eps = int(total_episodes) if total_episodes and total_episodes.isdigit() else None
+            
+            # Start playback with progress tracking
+            play_episode(
+                anime_id=anime_id,
+                source=source,
+                episode=episode_num,
+                url=url,
+                total_episodes=total_eps
+            )
+            
+            # Update the "Continue Watching" section
+            xbmc.executebuiltin('Container.Refresh')
+            
+        except Exception as e:
+            log(f"Error in play_item_route: {str(e)}", xbmc.LOGERROR)
+            xbmcgui.Dialog().notification(
+                "Playback Error",
+                f"Failed to start playback: {str(e)}",
+                xbmcgui.NOTIFICATION_ERROR
+            )
+        return
 
     # Old list_episodes - to be deprecated or used as a fallback if show_entrypoint is not used.
     # For now, let's assume new anime listings will point to "show_entry".
@@ -169,6 +178,34 @@ def router(paramstring):
         title = params.get("title", [None])[0]
         old_list_episodes(current_handle, anime_id, source, title)
 
+    # Library actions
+    elif action == "library":
+        show_library(current_handle)
+    elif action == "library_status":
+        status = params.get("status", [None])[0]
+        show_library(current_handle, status)
+    elif action == "continue_watching":
+        show_continue_watching(current_handle)
+    elif action == "add_to_library":
+        anime_id = params.get("anime_id", [None])[0]
+        source = params.get("source", ["anilist"])[0]
+        status = params.get("status", ["PLANNING"])[0]
+        if anime_id:
+            LIBRARY.add_to_library(anime_id, source, status)
+            xbmc.executebuiltin('Container.Refresh')
+    elif action == "remove_from_library":
+        anime_id = params.get("id", [None])[0]
+        source = params.get("source", ["anilist"])[0]
+        if anime_id:
+            LIBRARY.remove_from_library(anime_id, source)
+            xbmc.executebuiltin('Container.Refresh')
+    elif action == "update_status":
+        anime_id = params.get("id", [None])[0]
+        source = params.get("source", ["anilist"])[0]
+        status = params.get("status", [None])[0]
+        if anime_id and status:
+            LIBRARY.add_to_library(anime_id, source, status)
+            xbmc.executebuiltin('Container.Refresh()')
     elif action == "watchlist":
         from resources.lib.watchlist import list_watchlist
         list_watchlist(current_handle)
@@ -176,17 +213,87 @@ def router(paramstring):
         from resources.lib.ui import list_last_watched
         list_last_watched(current_handle)
     elif action == "trending":
-        list_anime(current_handle, AnimeDBAPI().trending(), title="Trending Anime")
+        page = int(params.get("page", [1])[0])
+        source = params.get("source", [None])[0]
+        list_trending(current_handle, page=page, source=source)
+    elif action == "seasonal":
+        page = int(params.get("page", [1])[0])
+        year = params.get("year", [None])[0]
+        if year:
+            try:
+                year = int(year)
+            except (ValueError, TypeError):
+                year = None
+        season = params.get("season", [None])[0]
+        source = params.get("source", [None])[0]
+        list_seasonal(current_handle, year=year, season=season, page=page, source=source)
+                
     elif action == "genres":
         list_genres(current_handle)
     elif action == "list_genre": # Specific genre listing
         genre_name = params.get("genre", [""])[0]
-        list_genre(current_handle, genre_name)
+        page = params.get("page", [1])[0]
+        try:
+            page = int(page)
+        except (ValueError, TypeError):
+            page = 1
+        list_genre(current_handle, genre_name, page)
     # elif action == "genre": # This seems like a duplicate of list_genre or for a different purpose
     #     genre_name = params.get("genre", [""])[0]
     #     list_anime(current_handle, AnimeDBAPI().get_by_genre(genre_name), title=f"Genre: {genre_name}")
+    # Search actions
+    elif action == "search_menu":
+        show_search_menu(current_handle)
+    elif action == "search_input":
+        show_search_input(current_handle)
+    elif action == "search_history":
+        show_search_history(current_handle)
+    elif action == "search_advanced":
+        show_advanced_search(current_handle)
+    elif action == "clear_search_history":
+        delete_search_history()
+        xbmc.executebuiltin('Container.Refresh')
+    elif action == "delete_search_history":
+        try:
+            index = int(params.get("index", [0])[0])
+            delete_search_history(index)
+        except (ValueError, IndexError):
+            pass
+        xbmc.executebuiltin('Container.Refresh')
     elif action == "search":
-        search(current_handle)
+        query = params.get("query", [None])[0]
+        media_type = params.get("media_type", [None])[0]
+        status = params.get("status", [None])[0]
+        year = params.get("year", [None])[0]
+        genres = params.get("genres", [None])[0]
+        sort = params.get("sort", ["SEARCH_MATCH"])[0]
+        page = int(params.get("page", [1])[0])
+        
+        # Prepare filters
+        filters = {}
+        if media_type:
+            filters["media_type"] = media_type
+        if status:
+            filters["status"] = status
+        if year:
+            try:
+                filters["year"] = int(year)
+            except (ValueError, TypeError):
+                pass
+        if genres:
+            filters["genres"] = genres.split(',')
+        if sort:
+            filters["sort"] = sort
+            
+        perform_search(current_handle, query, filters if filters else None, page)
+    elif action == "list_genre":
+        genre = params.get("genre", [""])[0]
+        page = params.get("page", [1])[0]
+        try:
+            page = int(page)
+        except (ValueError, TypeError):
+            page = 1
+        search(current_handle, query, media_type, status, year, genre, page)
     elif action == "history":
         list_history(current_handle)
     elif action == "continue_watching":

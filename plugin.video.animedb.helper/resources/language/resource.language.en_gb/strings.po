@@ -49,6 +49,23 @@ msgctxt "#30007"
 msgid "Debug Mode"
 msgstr "Enable detailed logging for troubleshooting"
 
+# Context menu items
+msgctxt "#30010"
+msgid "Mark as Watched"
+msgstr "Mark as Watched"
+
+msgctxt "#30011"
+msgid "Mark as Unwatched"
+msgstr "Mark as Unwatched"
+
+msgctxt "#30012"
+msgid "Refresh Episodes"
+msgstr "Refresh Episodes"
+
+msgctxt "#30013"
+msgid "Add/Remove from Watchlist"
+msgstr "Add/Remove from Watchlist"
+
 msgctxt "#30008"
 msgid "Season {number}"
 msgstr ""

@@ -10,14 +10,13 @@ except ImportError:
 from urllib.parse import urlencode, parse_qs
 import sys
 import traceback
-import json # For item_meta_json in play route
+import json
 import requests
 
 # Get addon instance
 ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo("id")
 
-# --- Localization --- 
 def get_localized_string(string_id):
     return ADDON.getLocalizedString(string_id)
 
@@ -60,14 +59,6 @@ def show_entrypoint(handle, anime_id, source, title=None):
             log("Proceeding with AniList details only.", xbmc.LOGWARNING)
 
         # Decide whether to show seasons list or direct episode list
-        # Consider a show to be multi-season if TMDB provides more than one season entry (excluding specials or based on config)
-        # For simplicity, if tmdb_show_details and its seasons list exists and has more than one item, show seasons.
-        # Or, if only one season exists but it is not season 1 (e.g. only season 2 listed), still go to season view.
-        # A common case is shows with only "Season 1". These could arguably go direct to episodes.
-        # Let's refine: go to seasons view if tmdb_show_details.seasons has more than 1 entry OR the single entry is not S1.
-        # However, an anime might just be one season (e.g. 12 eps). AniList `episodes` might be total.
-        # If TMDB has season info, use it. If not, fallback to flat list from AniList details.
-
         if tmdb_show_details and tmdb_show_details.get("seasons"):
             # Filter out seasons with episode_count 0 unless they are specials with a name
             valid_tmdb_seasons = [s for s in tmdb_show_details.get("seasons", []) if s.get("episode_count", 0) > 0 or (s.get("season_number") == 0 and s.get("name"))]
@@ -98,68 +89,92 @@ def list_show_seasons(handle, anime_id, source, show_details_anilist, tmdb_show_
 
     tmdb_seasons = tmdb_show_details.get("seasons", [])
     if not tmdb_seasons:
-        # This case should ideally be handled by show_entrypoint logic before calling this function
-        xbmcgui.Dialog().notification(get_localized_string(30003), get_localized_string(30004), xbmcgui.NOTIFICATION_INFO)
+        xbmcgui.Dialog().notification(
+            get_localized_string(30003), 
+            get_localized_string(30004), 
+            xbmcgui.NOTIFICATION_INFO
+        )
         xbmcplugin.endOfDirectory(handle)
         return
 
-    # Filter and sort seasons (e.g., specials first, then by season number)
-    # TMDB often includes season 0 for specials.
-    sorted_seasons = sorted([s for s in tmdb_seasons if s.get("episode_count",0) > 0 or (s.get("season_number") == 0 and s.get("name"))],
-                            key=lambda s: (s.get("season_number", 9999)))
+    # Sort seasons by season number
+    tmdb_seasons.sort(key=lambda x: x.get("season_number", 0))
 
-    for season_data in sorted_seasons:
-        season_number = season_data.get("season_number")
-        season_name_from_tmdb = season_data.get("name")
-        # Use TMDB name if available and not generic, otherwise format like "Season X"
-        season_display_name = season_name_from_tmdb if season_name_from_tmdb and not season_name_from_tmdb.lower().startswith("season ") else get_localized_string(30008).format(number=season_number)
-        if season_number == 0 and season_name_from_tmdb: # For specials, prefer TMDB name if specific
-            season_display_name = season_name_from_tmdb
-        elif season_number == 0: # Generic specials name
-            season_display_name = get_localized_string(30013)
-
-        if season_number is None: continue # Should not happen with filtered seasons
-
-        li = xbmcgui.ListItem(season_display_name)
+    for season in tmdb_seasons:
+        season_number = season.get("season_number", 0)
+        episode_count = season.get("episode_count", 0)
         
-        poster_path = season_data.get("poster_path")
-        tmdb_api = get_tmdb_api()
-        season_poster = tmdb_api.IMAGE_BASE + poster_path if tmdb_api and poster_path else show_details_anilist.get("poster", "")
-        show_fanart = tmdb_api.IMAGE_BASE + tmdb_show_details.get("backdrop_path") if tmdb_api and tmdb_show_details.get("backdrop_path") else show_details_anilist.get("banner", "")
+        # Skip season if it has no episodes and it's not a special
+        if episode_count == 0 and season_number != 0:
+            continue
+
+        # Skip specials (season 0) if they have no name
+        if season_number == 0 and not season.get("name"):
+            continue
+
+        # Set season title
+        if season_number == 0:
+            season_name = season.get("name", get_localized_string(30013))  # Specials
+        else:
+            season_name = get_localized_string(30008).format(number=season_number)  # Season X
         
-        art_data = {"poster": season_poster, "fanart": show_fanart, "banner": show_fanart, "thumb": season_poster}
-        li.setArt(art_data)
-
-        info_tag = li.getVideoInfoTag()
-        info_tag.setTitle(season_display_name)
-        info_tag.setTvShowTitle(show_details_anilist.get("title", ""))
-        info_tag.setSeason(season_number)
-        info_tag.setPlot(season_data.get("overview", show_details_anilist.get("description", "")))
-        info_tag.setMediaType("season")
-        if season_data.get("air_date"):
-            info_tag.setPremiered(season_data.get("air_date"))
-        if show_details_anilist.get("season_year"):
-             info_tag.setYear(int(show_details_anilist.get("season_year")))
-        if season_data.get("episode_count") is not None:
-            li.setProperty("TotalEpisodes", str(season_data.get("episode_count")))
-
+        # Set art
+        poster_path = season.get("poster_path")
+        fanart_path = tmdb_show_details.get("backdrop_path")
+        
+        # Create list item
+        li = xbmcgui.ListItem(season_name)
+        
+        # Set art
+        art = {}
+        if poster_path:
+            art["thumb"] = f"https://image.tmdb.org/t/p/w500{poster_path}"
+            art["poster"] = f"https://image.tmdb.org/t/p/w500{poster_path}"
+        if fanart_path:
+            art["fanart"] = f"https://image.tmdb.org/t/p/original{fanart_path}"
+        
+        li.setArt(art)
+        
+        # Set info
+        info = {
+            "title": season_name,
+            "tvshowtitle": show_details_anilist.get("title", ""),
+            "plot": season.get("overview", ""),
+            "season": season_number,
+            "episode": episode_count,
+            "mediatype": "season"
+        }
+        
+        if season.get("air_date"):
+            info["premiered"] = season.get("air_date")
+        
+        li.setInfo("video", info)
+        
+        # Create URL
         url_params = {
             "action": "list_episodes_for_season",
             "anime_id": anime_id,
             "source": source,
             "season_number": str(season_number),
-            "show_title": show_details_anilist.get("title", ""), # Pass for category context
-            "tmdb_id": tmdb_show_details.get("id", "")
+            "tmdb_id": str(tmdb_show_details.get("id", "")),
+            "title": show_details_anilist.get("title", "")
         }
+        
         url = f"{sys.argv[0]}?{urlencode(url_params)}"
-        xbmcplugin.addDirectoryItem(handle=handle, url=url, listitem=li, isFolder=True)
+        
+        # Add directory item
+        xbmcplugin.addDirectoryItem(
+            handle=handle,
+            url=url,
+            listitem=li,
+            isFolder=True
+        )
     
-    xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
-    xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_SEASON)
     xbmcplugin.endOfDirectory(handle)
 
 def list_episodes_for_season(handle, anime_id, source, season_number, show_details_anilist=None, tmdb_id=None, tmdb_show_details_parent=None):
     log(f"list_episodes_for_season: anime_id={anime_id}, S{season_number}, tmdb_id={tmdb_id}")
+    
     # Ensure season_number is int
     try:
         season_number = int(season_number)
@@ -183,11 +198,13 @@ def list_episodes_for_season(handle, anime_id, source, season_number, show_detai
         show_title_for_display = show_details_anilist.get("title", get_localized_string(30012))
         xbmcplugin.setContent(handle, "episodes")
         season_display_name_for_category = get_localized_string(30008).format(number=season_number)
-        if season_number == 0: season_display_name_for_category = get_localized_string(30013) # Specials
+        if season_number == 0: 
+            season_display_name_for_category = get_localized_string(30013)  # Specials
         xbmcplugin.setPluginCategory(handle, f"{show_title_for_display} - {season_display_name_for_category}")
 
         tmdb_season_episodes = []
         tmdb_season_meta = None
+        
         if tmdb_id and tmdb_api:
             try:
                 # Get season details from TMDB
@@ -202,12 +219,12 @@ def list_episodes_for_season(handle, anime_id, source, season_number, show_detai
             except Exception as e:
                 log(f"Error fetching TMDB season details for {tmdb_id}, S{season_number}: {e}", xbmc.LOGERROR)
                 log(traceback.format_exc(), xbmc.LOGERROR)
-                # Do not fail here, might fallback to anilist if logic allows
+                # Continue with AniList fallback
         
         # Determine fanart: use parent show fanart if available
         show_fanart = ""
         if tmdb_show_details_parent and tmdb_show_details_parent.get("backdrop_path") and tmdb_api:
-            show_fanart = tmdb_api.IMAGE_BASE + tmdb_show_details_parent.get("backdrop_path")
+            show_fanart = f"https://image.tmdb.org/t/p/original{tmdb_show_details_parent.get('backdrop_path')}"
         elif show_details_anilist.get("banner"):
             show_fanart = show_details_anilist.get("banner")
 
@@ -225,24 +242,15 @@ def list_episodes_for_season(handle, anime_id, source, season_number, show_detai
                 xbmcplugin.endOfDirectory(handle)
                 return
             
-            # For AniList, we need to map episodes to seasons if we're showing a specific season
-            # This is a simplistic approach - in a real implementation, you might need more sophisticated mapping
-            # For now, let's assume:
-            # - Season 1: Episodes 1-12/13
-            # - Season 2: Episodes 13/14-24/26
-            # - Season 3: Episodes 25/27-36/39
-            # - And so on...
-            # - Season 0 (specials): Any episodes marked as specials or OVAs
-            
+            # For AniList, we'll use a simple approach to map episodes to seasons
             episodes_per_season = 12  # Typical anime season length
             
             # Filter episodes for the requested season
             if season_number == 0:
-                # For specials (season 0), we might need special logic
-                # This is just a placeholder - in reality, you'd need to identify specials
+                # For specials (season 0), we'll include any episode marked as a special
                 filtered_episodes = [ep for ep in anilist_episodes if "special" in ep.get("title", "").lower()]
             else:
-                # Regular seasons
+                # For regular seasons, we'll use a simple calculation based on episode numbers
                 start_ep = (season_number - 1) * episodes_per_season + 1
                 end_ep = season_number * episodes_per_season
                 filtered_episodes = [ep for ep in anilist_episodes if start_ep <= ep.get("number", 0) <= end_ep]
@@ -277,21 +285,17 @@ def list_episodes_for_season(handle, anime_id, source, season_number, show_detai
                 if episode.get("duration"):
                     info_tag.setDuration(episode.get("duration") * 60)  # Convert minutes to seconds
                 
-                # Create URL for playback
-                item_meta = {
-                    "tmdb_id": tmdb_id,
-                    "tmdb_type": "tv",
-                    "anilist_id": anime_id,
-                    "source": source,
-                    "season": season_number,
-                    "episode": episode_number,
-                    "title": show_title_for_display,
-                    "ep_title": episode_title
-                }
-                
+                # Create URL for playback using the new player
                 url_params = {
                     "action": "play_item_route",
-                    "item_meta_json": json.dumps(item_meta)
+                    "anime_id": str(anime_id),
+                    "source": source,
+                    "episode": str(episode_number),
+                    "total_episodes": str(show_details_anilist.get("episodes", 0)),
+                    "title": show_title_for_display,
+                    "episode_title": episode_title,
+                    # Use a placeholder URL - in a real implementation, this would be the actual video URL
+                    "url": f"plugin://{ADDON_ID}/play/anime/{anime_id}/{episode_number}"
                 }
                 
                 url = f"{sys.argv[0]}?{urlencode(url_params)}"
@@ -306,7 +310,7 @@ def list_episodes_for_season(handle, anime_id, source, season_number, show_detai
                 
                 # Set art
                 still_path = episode.get("still_path")
-                thumb = tmdb_api.IMAGE_BASE + still_path if tmdb_api and still_path else ""
+                thumb = f"https://image.tmdb.org/t/p/w500{still_path}" if still_path else ""
                 art_data = {"thumb": thumb, "fanart": show_fanart}
                 li.setArt(art_data)
                 
@@ -325,21 +329,17 @@ def list_episodes_for_season(handle, anime_id, source, season_number, show_detai
                 if episode.get("runtime"):
                     info_tag.setDuration(episode.get("runtime") * 60)  # Convert minutes to seconds
                 
-                # Create URL for playback
-                item_meta = {
-                    "tmdb_id": tmdb_id,
-                    "tmdb_type": "tv",
-                    "anilist_id": anime_id,
-                    "source": source,
-                    "season": season_number,
-                    "episode": episode_number,
-                    "title": show_title_for_display,
-                    "ep_title": episode_title
-                }
-                
+                # Create URL for playback using the new player
                 url_params = {
                     "action": "play_item_route",
-                    "item_meta_json": json.dumps(item_meta)
+                    "anime_id": str(anime_id),
+                    "source": source,
+                    "episode": str(episode_number),
+                    "total_episodes": str(tmdb_show_details_parent.get("number_of_episodes", 0) if tmdb_show_details_parent else 0),
+                    "title": show_title_for_display,
+                    "episode_title": episode_title,
+                    # Use a placeholder URL - in a real implementation, this would be the actual video URL
+                    "url": f"plugin://{ADDON_ID}/play/anime/{anime_id}/{episode_number}"
                 }
                 
                 url = f"{sys.argv[0]}?{urlencode(url_params)}"

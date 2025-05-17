@@ -2,15 +2,60 @@ import xbmcplugin
 import xbmcgui
 import xbmcaddon
 import xbmc
-from urllib.parse import urlencode
+import json
+from urllib.parse import urlencode, parse_qsl
+from typing import Dict, List, Optional, Any, Union, Tuple
 
 # Get addon instance
 ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo('id')
 
-def list_episodes(handle, anime_id, source='anilist', title=None):
-    import xbmc
-    xbmc.log(f"list_episodes called with anime_id={anime_id}, source={source}, title={title}", xbmc.LOGWARNING)
+# Import after ADDON is defined to avoid circular imports
+from resources.lib.library import LIBRARY
+from resources.lib.ui_utils import create_episode_list_item
+
+def get_watched_episodes(anime_id: str, source: str) -> List[int]:
+    """Get list of watched episode numbers for an anime."""
+    try:
+        anime = LIBRARY.get_anime_status(anime_id, source)
+        if anime and 'watched_episodes' in anime:
+            return anime['watched_episodes']
+    except Exception as e:
+        xbmc.log(f"Error getting watched episodes: {str(e)}", xbmc.LOGERROR)
+    return []
+
+def get_episode_progress(anime_id: str, source: str, episode_number: int) -> float:
+    """Get progress for a specific episode."""
+    try:
+        return LIBRARY.get_episode_progress(anime_id, source, episode_number)
+    except Exception as e:
+        xbmc.log(f"Error getting episode progress: {str(e)}", xbmc.LOGERROR)
+        return 0.0
+
+def create_play_url(anime_id: str, source: str, episode: int, total_episodes: Optional[int] = None) -> str:
+    """Create a play URL for an episode."""
+    params = {
+        'action': 'play',
+        'anime_id': str(anime_id),
+        'source': source,
+        'episode': str(episode)
+    }
+    if total_episodes:
+        params['total_episodes'] = str(total_episodes)
+    return f'plugin://{ADDON_ID}/?{urlencode(params)}'
+
+def list_episodes(handle: int, anime_id: str, source: str = 'anilist', title: Optional[str] = None) -> None:
+    """
+    List all episodes for an anime with progress tracking and improved display.
+    
+    Args:
+        handle: Kodi window handle
+        anime_id: ID of the anime
+        source: Source service (anilist, mal, etc.)
+        title: Optional title for the listing
+    """
+    xbmc.log(f"list_episodes called with anime_id={anime_id}, source={source}, title={title}", xbmc.LOGINFO)
+    
     # Validate anime_id
     if not anime_id or not str(anime_id).isdigit():
         xbmcgui.Dialog().notification(
@@ -21,25 +66,24 @@ def list_episodes(handle, anime_id, source='anilist', title=None):
         if isinstance(handle, int) and handle >= 0:
             xbmcplugin.endOfDirectory(handle)
         return
+    
+    # Get watched episodes and progress
+    watched_episodes = get_watched_episodes(anime_id, source)
+    
     # Try TMDB integration first
     from resources.lib.tmdb_bridge import get_tmdb_episodes
 
-    """
-    List all episodes for an anime with improved display and direct playback
-    """
-    from resources.lib.api import AnimeDBAPI
-    
-    # Set content type
+    # Set content type and properties
     xbmcplugin.setContent(handle, 'episodes')
     
     # Set category
-    if title:
-        xbmcplugin.setPluginCategory(handle, f"Episodes: {title}")
+    display_title = title or f"Anime ID: {anime_id}"
+    xbmcplugin.setPluginCategory(handle, f"Episodes: {display_title}")
     
     # Get anime details
     api = AnimeDBAPI()
     details = api.anime_details(anime_id, source)
-    xbmc.log(f"Anime details fetched: {details}", xbmc.LOGWARNING)
+    xbmc.log(f"Anime details fetched: {details}", xbmc.LOGINFO)
     
     if not details:
         xbmcgui.Dialog().notification(
@@ -50,6 +94,9 @@ def list_episodes(handle, anime_id, source='anilist', title=None):
         if isinstance(handle, int) and handle >= 0:
             xbmcplugin.endOfDirectory(handle)
         return
+    
+    # Get total episodes from details if available
+    total_episodes = details.get('episodes') or 0
     
     # Get total episodes
     total_episodes = details.get('episodes', 0)
@@ -136,54 +183,46 @@ def list_episodes(handle, anime_id, source='anilist', title=None):
             info_tag.setGenres([g['name'] for g in tmdb_meta['genres']])
         else:
             info_tag.setGenres(details.get('genres', []))
-        if tmdb_meta and tmdb_meta.get('vote_average'):
-            info_tag.setRating(tmdb_meta['vote_average'])
-        else:
-            info_tag.setRating(details.get('score', 0) / 10.0)
-        info_tag.setYear(details.get('season_year'))
-        info_tag.setMediaType('episode')
-        # Set artwork - prefer episode thumbnail if available, fallback to poster/banner
-        art = {
-            'poster': (tmdb_meta and tmdb_meta.get('poster_path') and tmdb_api.IMAGE_BASE + tmdb_meta['poster_path']) or details.get('poster', ''),
-            'fanart': (tmdb_meta and tmdb_meta.get('backdrop_path') and tmdb_api.IMAGE_BASE + tmdb_meta['backdrop_path']) or details.get('banner', details.get('poster', '')),
-            'banner': (tmdb_meta and tmdb_meta.get('backdrop_path') and tmdb_api.IMAGE_BASE + tmdb_meta['backdrop_path']) or details.get('banner', ''),
-            'thumb': episode_thumb
-        }
-        li.setArt(art)
-
-        
+            
         # Set additional properties for better Kodi integration
         li.setProperty('IsPlayable', 'true')
         li.setProperty('TotalEpisodes', str(total_episodes))
         
+        # Create URL for playback with all necessary parameters
+        url = create_play_url(
+            anime_id=anime_id,
+            source=source,
+            episode=ep_num,
+            total_episodes=total_episodes
+        )
+        
         # Create context menu items
-        context_menu = []
+        context_items = [
+            (ADDON.getLocalizedString(30010),  # Mark as Watched
+             f'RunPlugin(plugin://{ADDON_ID}/?action=mark_watched&anime_id={anime_id}&source={source}&episode={ep_num}'),
+            (ADDON.getLocalizedString(30011),  # Mark as Unwatched
+             f'RunPlugin(plugin://{ADDON_ID}/?action=mark_unwatched&anime_id={anime_id}&source={source}&episode={ep_num}'),
+            (ADDON.getLocalizedString(30012),  # Refresh Episodes
+             f'RunPlugin(plugin://{ADDON_ID}/?action=refresh_episodes&anime_id={anime_id}&source={source}'),
+            (ADDON.getLocalizedString(30013),  # Add/Remove from Watchlist
+             f'RunPlugin(plugin://{ADDON_ID}/?action=toggle_watchlist&id={anime_id}&source={source}')
+        ]
         
-        # Add to watchlist option
-        context_menu.append((
-            "Add/Remove to Watchlist",
-            f"RunPlugin(plugin://{ADDON_ID}/?action=toggle_watchlist&id={anime_id}&source={source})"
-        ))
+        li.addContextMenuItems(context_items)
         
-        # Mark as watched/unwatched
-        context_menu.append((
-            "Mark as Watched",
-            f"RunPlugin(plugin://{ADDON_ID}/?action=mark_watched&id={anime_id}&episode={episode_num}&source={source})"
-        ))
-        
-        li.addContextMenuItems(context_menu)
-        
-        # Set URL for direct playback
-        url = f"plugin://{ADDON_ID}/?action=play&id={anime_id}&source={source}&episode={episode_num}"
-        
-        # Add to directory as a playable item
+        # Add to directory with progress tracking
         xbmcplugin.addDirectoryItem(
             handle=handle,
             url=url,
             listitem=li,
             isFolder=False,
-            totalItems=total_episodes
+            totalItems=len(episodes)
         )
+        
+        # Set the resume point if partially watched
+        if 0 < progress < 1:
+            li.setProperty('ResumeTime', str(int(progress * 100)))
+            li.setProperty('TotalTime', '100')  # 100% as base
     
     # Add sort methods
     xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_EPISODE)
